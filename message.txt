@@ -1,0 +1,263 @@
+local RL=Instance.new("ScreenGui")
+local Title=Instance.new("TextLabel")
+local Frame=Instance.new("Frame")
+local PlayerList=Instance.new("ScrollingFrame")
+local UIListLayout=Instance.new("UIListLayout")
+local BaseButton=Instance.new("TextButton")
+local CS=Instance.new("TextLabel")
+local BB=Instance.new("TextButton")
+RL.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+RL.ResetOnSpawn = false
+Title.Parent = RL
+Title.Active = true
+Title.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+Title.BorderColor3 = Color3.fromRGB(114, 114, 114)
+Title.BorderSizePixel = 2
+Title.Draggable = true
+Title.Position = UDim2.new(0.832048118, -124, 0.535290003, -125)
+Title.Selectable = true
+Title.Size = UDim2.new(.3,0,.075,0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "The Watcher"
+Title.TextColor3 = Color3.fromRGB(216, 216, 216)
+Title.TextSize = 34.000
+Title.TextStrokeColor3 = Color3.fromRGB(89, 89, 89)
+Title.TextStrokeTransparency = 0.500
+Frame.Parent = Title
+Frame.Active = true
+Frame.BackgroundTransparency = 1.000
+Frame.BorderColor3 = Color3.fromRGB(114, 114, 114)
+Frame.BorderSizePixel = 2
+Frame.Position = UDim2.new(0, 0, 1, 0)
+Frame.Size = UDim2.new(1,0,10,0)
+PlayerList.Parent = Frame
+PlayerList.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+PlayerList.BorderColor3 = Color3.fromRGB(114, 114, 114)
+PlayerList.BorderSizePixel = 2
+PlayerList.Size = UDim2.new(1,0,1,0)
+PlayerList.ScrollBarThickness = 6
+UIListLayout.Parent = PlayerList
+UIListLayout.Padding = UDim.new(0, 4)
+BaseButton.BackgroundColor3 = Color3.fromRGB(89, 89, 89)
+BaseButton.BorderColor3 = Color3.fromRGB(114, 114, 114)
+BaseButton.Size = UDim2.new(1,0,.02,0)
+BaseButton.Font = Enum.Font.SourceSansSemibold
+BaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+BaseButton.TextScaled = true
+BaseButton.TextStrokeColor3 = Color3.fromRGB(91, 91, 91)
+BaseButton.TextWrapped = true
+CS.Parent = RL
+CS.AnchorPoint = Vector2.new(0.5, 0)
+CS.BackgroundTransparency = 1.000
+CS.Position = UDim2.new(0.5, 0, 0, 0)
+CS.Size = UDim2.new(0.38499999, 0, 0.0734999999, 0)
+CS.Font = Enum.Font.SourceSansBold
+CS.Text = "Currently Spectating: N/A"
+CS.TextColor3 = Color3.fromRGB(0, 0, 0)
+CS.TextScaled = true
+CS.TextStrokeColor3 = Color3.fromRGB(197, 197, 0)
+CS.TextStrokeTransparency = 0.000
+CS.TextWrapped = true
+BB.Parent = RL
+BB.AnchorPoint = Vector2.new(0.5, 0)
+BB.BackgroundColor3 = Color3.fromRGB(141, 141, 141)
+BB.BorderSizePixel = 0
+BB.Position = UDim2.new(0.494941413, 0, 0.0891088992, 0)
+BB.Size = UDim2.new(0.0499013083, 0, 0.0274681801, 0)
+BB.Font = Enum.Font.SourceSansBold
+BB.Text = "Ban"
+BB.TextColor3 = Color3.fromRGB(255, 0, 0)
+BB.TextScaled = true
+BB.TextStrokeTransparency = 0.800
+BB.TextWrapped = true
+BB.Visible = false
+CS.Visible = false
+local Players=game:GetService'Players'
+local Air=Enum.Material.Air
+local Nc=Enum.HumanoidStateType.None
+local Sf=Enum.HumanoidStateType.StrafingNoPhysics
+local function PIG(Part,Hum)
+	local ObjPos=Part.Position
+    local newRay=Ray.new(ObjPos,Vector3.new(0,-15,0))
+    local Hit,Pos=workspace:FindPartOnRay(newRay,Part.Parent)
+	local state=Hum:GetState()
+	if(not Hit or Hit and Pos and(ObjPos-Pos).Magnitude>10)and Hum.FloorMaterial==Air or state==Nc or state==Sf then
+		return true
+	end
+	return
+end
+local LP=Players.LocalPlayer
+local Cam=workspace.CurrentCamera
+local Tab=Players:GetPlayers()
+local Clicked
+for Idx=1,#Tab do
+	local Obj=Tab[Idx]
+	local Ch=Obj.Character
+	if Obj.Name~=LP.Name then
+		if Ch and Ch.Parent then
+			local Bu=BaseButton:Clone()
+			Bu.Text=Obj.Name..': N/A /s'
+			Bu.Name=Obj.Name
+			spawn(function()
+				local Head=Ch:WaitForChild'Head'
+				local OPS=Head.Position
+				local Hum=Ch:WaitForChild'Humanoid'
+				while wait(.5)and Ch.Parent do
+					if PIG(Head,Hum)then
+						Bu.TextColor3=Color3.new(1,0,0)
+					else
+						Bu.TextColor3=Color3.new(1,1,1)
+					end
+					Bu.Text=Obj.Name..': '..math.ceil((OPS-Head.Position).Magnitude)..' /s'
+					OPS=Head.Position
+				end
+				Bu:Destroy()
+			end)
+			Bu.MouseButton1Click:Connect(function()
+				if not Clicked and Ch and Ch.Parent then
+					Clicked=Obj.Name
+					CS.Visible=true
+					BB.Visible=true
+					CS.Text='Currently Spectating: '..Obj.Name
+					if Ch and Ch.Parent then
+						Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+					end
+				else
+					if Clicked==Obj.Name then
+						Clicked=false
+						if LP.Character then
+							Cam.CameraSubject=LP.Character:WaitForChild'Humanoid'
+						end
+						BB.Visible=false
+						CS.Visible=false
+					else
+						Clicked=Obj.Name
+						CS.Visible=true
+						BB.Visible=true
+						CS.Text='Currently Spectating: '..Obj.Name
+						if Ch and Ch.Parent then
+							Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+						end
+					end
+				end
+			end)
+			Bu.Parent=PlayerList
+		end
+		Obj.CharacterAdded:Connect(function(Ch)
+			local Obj2=PlayerList:FindFirstChild(Obj.Name)
+			if Obj2 then
+				Obj2:Destroy()
+			end
+			local Bu=BaseButton:Clone()
+			Bu.Text=Obj.Name..': N/A /s'
+			spawn(function()
+				local Head=Ch:WaitForChild'Head'
+				local OPS=Head.Position
+				local Hum=Ch:WaitForChild'Humanoid'
+				while wait(.5)and Ch.Parent do
+					if PIG(Head,Hum)then
+						Bu.TextColor3=Color3.new(1,0,0)
+					else
+						Bu.TextColor3=Color3.new(1,1,1)
+					end
+					Bu.Text=Obj.Name..': '..math.ceil((OPS-Head.Position).Magnitude)..' /s'
+					OPS=Head.Position
+				end
+				Bu:Destroy()
+			end)
+			Bu.MouseButton1Click:Connect(function()
+				if not Clicked then
+					Clicked=Obj.Name
+					CS.Visible=true
+					BB.Visible=true
+					CS.Text='Currently Spectating: '..Obj.Name
+					if Ch and Ch.Parent then
+						Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+					end
+				else
+					if Clicked==Obj.Name then
+						Clicked=false
+						if LP.Character then
+							Cam.CameraSubject=LP.Character:WaitForChild'Humanoid'
+						end
+						BB.Visible=false
+						CS.Visible=false
+					else
+						Clicked=Obj.Name
+						CS.Visible=true
+						BB.Visible=true
+						CS.Text='Currently Spectating: '..Obj.Name
+						if Ch and Ch.Parent then
+							Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+						end
+					end
+				end
+			end)
+			Bu.Parent=PlayerList
+		end)
+	end
+end
+Players.PlayerAdded:Connect(function(Player)
+	Player.CharacterAdded:Connect(function(Ch)
+		local Obj=PlayerList:FindFirstChild(Player.Name)
+		if Obj then
+			Obj:Destroy()
+		end
+		local Bu=BaseButton:Clone()
+		Bu.Text=Player.Name..': N/A /s'
+		spawn(function()
+			local Head=Ch:WaitForChild'Head'
+			local OPS=Head.Position
+			local Hum=Ch:WaitForChild'Humanoid'
+			while wait(.5)and Ch.Parent do
+				if PIG(Head,Hum)then
+					Bu.TextColor3=Color3.new(1,0,0)
+				else
+					Bu.TextColor3=Color3.new(1,1,1)
+				end
+				Bu.Text=Player.Name..': '..math.ceil((OPS-Head.Position).Magnitude)..' /s'
+				OPS=Head.Position
+			end
+			Bu:Destroy()
+		end)
+		Bu.MouseButton1Click:Connect(function()
+			if not Clicked then
+				Clicked=Player.Name
+				CS.Visible=true
+				BB.Visible=true
+				CS.Text='Currently Spectating: '..Player.Name
+				if Ch and Ch.Parent then
+					Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+				end
+			else
+				if Clicked==Player.Name then
+					Clicked=false
+					if LP.Character then
+						Cam.CameraSubject=LP.Character:WaitForChild'Humanoid'
+					end
+					BB.Visible=false
+					CS.Visible=false
+				else
+					Clicked=Player.Name
+					CS.Visible=true
+					BB.Visible=true
+					CS.Text='Currently Spectating: '..Player.Name
+					if Ch and Ch.Parent then
+						Cam.CameraSubject=Ch:WaitForChild'Humanoid'
+					end
+				end
+			end
+		end)
+		Bu.Parent=PlayerList
+	end)
+end)
+local retard = game:GetService("UserInputService")
+retard.InputBegan:connect(function(idiot)
+if idiot.keyCode == Enum.KeyCode.F5 then
+if Title.Visible == true then
+	Title.Visible = false else
+	Title.Visible = true
+end
+end
+end)
+RL.Parent=game:GetService'CoreGui'
